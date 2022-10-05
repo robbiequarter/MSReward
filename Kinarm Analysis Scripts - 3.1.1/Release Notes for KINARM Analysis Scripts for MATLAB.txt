@@ -1,0 +1,206 @@
+Release Notes for KINARM Analysis Scripts for MATLAB
+
+----- v3.1.1 (Dec, 2021) ----- 
+Version 3.1.1 is a minor update in order to allow the analysis scripts to run on a Mac.
+
+KAS-76 - Added the required MEXed versions of files for Mac an Linux.
+KAS-77 - Added references to required equations in KINARM_add_torques.m
+KAS-79 - Fixed an issue where calculating trough inertias failed if an explicit inertia was not provided.
+KAS-81 - When loading multiple exams at once, the struct fields were only sorted for the first exam
+KAS-82 - Fixed an exception loading very long trials (>15min) where there are no exam events.
+KAS-84 - Updating the demo script to use exam_load rather than zip_load
+KAS-86 - Fixed a problem calling KINARM_add_sho_elb that would cause an error if multiple exams were passed in at once.
+
+----- v3.1.0 (Mar, 2021) ----- 
+Version 3.1 of the analysis scripts is required to read exams collected with
+Dexterit-E 3.9 and later, i.e. exams stored in the .kinarm format. The older
+.zip format data can still be read with this version of the scripts.
+
+The zip_load() method has been re-named exam_load(), to reflect that it will load either file format (.kinarm or .zip). 
+The zip_load() method still exists and works identically to exam_load(), however, zip_load() will be deprecated in a future release
+
+This update to the scripts provides significant improvement in loading speed
+over previous versions. You can expect that reading .zip files will take about 1/2 
+the time they used to. 
+
+NEW FEATURES:
+KAS-14 - A new demo script is available for showing how to use the scripts to calculate 
+        intra-muscular torques (demo/demo_calc_im_torques.m).
+KAS-37 - Channels with the name XXX_TimeStamp are not filtered as part of a call to filter_double_pass()
+KAS-39 - The version of analysis used on KST is loaded into data.analysis.analysis_version
+KAS-44 - Improve the speed of loading exam (by loading into memory directly instead of unzipping the files to disk)
+KAS-70 - A new function is available to calculate shoulder and elbow angle. velocity and acceleration
+        KINARM_add_sho_elb.m
+
+BUG FIXES
+KAS-41 - Providing a clearer error message if the file you are trying to load does not exist.
+KAS-52 - Corrected typo in help for KINARM_add_torques (duplicate reference to [ELB|SHO]TorIM)
+
+----- v3.0.2 (Dec 3, 2019) ----- 
+NEW FEATURES:
+PDF documentation update
+
+----- v3.0.1 (Nov 30, 2018) ----- 
+NEW FEATURES:
+KAS-39 - Read in the analysis version information for KST exams that have been analyzed.
+KAS-40 - Added a "demo" folder and moved demo scripts there. Added demo_find_peak_speeds.m function to show some rudimentary analysis.
+
+----- v3.0 (July 19, 2018) ----- 
+Version 3.0 of the KINARM Analysis Scripts presents a significant update to these scripts. In particular, they can now 
+handle data output from the zip_load function natively, and there has been some re-naming and re-organization to 
+simplify their structure. They have also been re-named KINARM Analysis Scripts.
+
+PLEASE NOTE: Every effort has been made to ensure the updates in this version of the KINARM Analysis Scripts are backward 
+	compatible with pervious releases. As such, any code you have written using previous versions of the supplied functions
+	should not require any changes to run with this update. In the limited cases where we have identified issues you 
+	need to be made aware of the functions have been updated with complete help for upgrading.
+
+NEW FEATURES:
+CT-2 - Various functions have been updated to handle data in the format of zip_load directly (i.e. functionName(data,...), 
+	where data = zip_load), as well is the legacy format (i.e. functionName(data(ii).c3d, ...), where data = zip_load).
+CT-33 - If a data file was re-named within Dexterit-E (i.e. in the exam tree), that name is now loaded into the data 
+	structure as text in the field file_label.
+CT-33 - The actual filename is now also stored as a text in a field called file_name (the original field filename, which 
+	is a cell array, still exists).
+CT-36 - KINARM_add_friction() now will add friction based on default values for each KINARM robot type if no friction 
+	values are passed in.
+CT-42 - The StatusBits field is now loaded as an integer (uint32), to ensure that they are not filtered by 
+	c3d_filter_dblpass().
+CT-44 - zip_load() now auto sorts the trials into the order in which they were run.
+CT-46 - c3d_add_video_latency() and c3d_filter_dblpass() have been re-named add_video_latency() and filter_double_pass(). 
+	c3d_load.m, c3d_single_file_load.m and correctXTorque.m have been embedded within zip_load.m. Direct support of 
+	pre Dexterit-E 3.0 data is no longer supported.
+Updated some of the inline help for various functions.
+
+
+BUG FIXES:
+CT-34 - Fixed issue in c3d_filter_dblpass() which caused it to crash if any analog channels are integer. Integer fields 
+	are no longer filtered (required to be compatible with data produced by Dexterit-E 3.7, which saves some integer channels).
+CT-35 - Fixed issue in sort_trials() so that it sorts by execution order by default (without input arguments) and can 
+	accept the data structure from zip_load() when there are multiple exam files.
+CT-37 - Fixed issue in zip_load() in which analog channel names with invalid characters for MATLAB fields would cause 
+	zip_load() to crash.
+CT-39 - Fixed issue in zip_load() in which exam files with different fields (e.g. .analysis field) will cause zip_load()
+	to crash.
+CT-47 - Fixed issue in KINARM_add_torques() in which the torques and forces applied by the robot the subject had the 
+	incorrect sign.
+CT-48 - Fixed issue in KINARM_create_trough_database() which would result an incorrect estimate of hand trough location 
+	when used with KINAR_add_trough_inertias() if "estimate trough location" was used. The results would be a very 
+	significant overestimation of hand trough inertia, resulting in incorrect estimates of applied torques and 
+	intramuscular torques. The severity of this bug will depend on the speed and acceleration of the forearm.
+
+
+----- v2.21 (Apr 30, 2018) ----- 
+NEW FEATURES:
+CT-23 - Updated the code to read analysis results from Arm Position Matching and Visually Guided Reaching.
+CT-25 - Increased the speed of loading files for all versions of MATLAB (via changes to  c3d_load_single_file.m). 
+CT-25 - File loading progress at command prompt now shown by '.' for each c3d file (instead of c3d file name). 
+CT-25 - Fixed a slow-down in R2017b (slow-down was caused by Mathworks' deprecation of genvarname() ).
+CT-31 - Updated exam file reading to automatically convert force torque sensor status information to uint32
+
+BUG FIXES:
+CT-25 - Trailing whitespace is now removed correctly from strings in data(fileNum).c3d(trialNum).VIDEO_LATENCY.LABELS
+CT-27 - Fixed a possible crash in R2018a (due to an 'analysis' folder already existing on the MATLAB path)
+
+
+
+----- v2.20 (Jan 10, 2018) ----- 
+NEW FEATURES:
+Improved help description for KINARM_add_torques.m
+Updated KINARM_add_friction.m help with more recent typical friction estimates of Human KINARM Exoskeleton and KINARM End-Point robots
+Updated KINARM_create_trough_database.m with inertia estimates for the 2016 Re-design of the KINARM Exoskeleton
+
+BUG FIXES:
+Corrected a bug in the calculation of intramuscular shoulder torque KINARM_add_torques.m)
+
+
+----- v2.19 (Aug 1, 2017) ----- 
+NEW FEATURES:
+Improved help and comments for c3d_add_video_latency and calc_visual_stimulus_time function.
+Added functionality to c3d_add_video_latency to work with CRT-like displays that do not buffer the image
+Added KINARM_add_COP.m in order to calculate the Center of Pressure with force plates used in a KINARM lab.
+
+BUG FIXES:
+Fixed issues with reading newer exam files.
+Fixed reading data for left arm only KINARM Labs.
+
+
+----- v2.18 (May 4, 2016) ----- 
+NEW FEATURES:
+Added sample code to show how to calculate the latency of a visual stimulus
+
+BUG FIXES:
+Fixed an issue with c3d_add_video_latency with the correction factor to the video frame acknowlegdements.
+
+
+----- v2.17 (Nov 11, 2015) ----- 
+Added a method to sort trials into the order they were run in (sort_trials.m)
+
+
+----- v2.16 (MaY 11, 2015) ----- 
+Added ability to read in analysis results for KST exams
+Added torque calculation auto-corrections
+
+
+----- v2.15 (January 17, 2014) ----- 
+Fixed an issue with KINARM_add_trough_inertia in which errors in one of the inputs was not checked for properly.
+
+
+----- v2.14 (November 29, 2012) ----- 
+Fixed an issue with using pre-Dexterit-E 3.1.0 data in KINARM_add_hand_kinematics
+
+
+----- v2.13 (October 29 2012) ----- 
+Fixed an issue with reading very long parameters.
+
+
+----- v2.11 (October 31 2011) ----- 
+KINARM_add_hand_Kinematics and KINARM_add_torques did not handle EP correctly (looked for certain KINARM parameters that are part of calibration for Exo, but are part of xxxx_KINARM for EP).
+One of those m-files also made that assumption that the right and left KINARMs were the same robot type.  That assumption is no longer made.
+
+
+----- v2.10 (June 22 2011) ----- 
+Added capability to zip_load to pass c3d filename options.
+
+
+----- v2.9 (Jan 21 2011) ----- 
+#565 - Fixing an issue calculating velocities
+Added zip_load to load Dexterit-E 3.0 format files.
+
+
+----- c3d_load_(2009-09-14) ----- 
+renamed LIMB_readC3D.m to c3d_load_single_file.m
+Updated c3d_load_single_file.m to read new Events and Ranges section in c3d files, allowing up to 65535 events and 65535 ranges.
+Updated c3d_load.m to move Ranges with a "Video Frame..." label into a new Video_Latency field.
+added the following functions:
+c3d_add_Video_Latency.m (this function adds minimum and maximum latencies for video display).
+c3d_filter_dblpass.m (this function double pass filters all analog data)
+demo_c3d_load.m (this function provides a basic demonstration of some of the features of the c3d_load files)
+KINARM_add_hand_kinematics.m (this function adds hand speed and acceleration to the c3d data structure)
+
+
+----- V2.7 (Feb 21 2009) ----- 
+Fixed LIMB_readC3D.m to be able to read files with > 127 events (255 max now), and in general, with > 127 elements per dimension in any parameter's data (255 max).
+
+
+----- V2.6 (Jan 26 2008) ----- 
+Fixed LIMB_readC3D.m to files with no analog channels, just parameters.  Changed precision of fread from int16 to uint16 on POINT.FRAMES param
+% to allow trials with > 32767 frames (up to 65535 frames now).
+
+
+----- V2.5 (Feb 26 2008) ----- 
+Fixed LIMB_readC3D.m to be able to handle parametergroup descriptions longer than 128 characters (up to 255 is now allowed)
+
+
+----- V2.4 (Jan. 3, 2008) ----- 
+Field names are now forced to be valid using genvarname
+
+
+----- V2.1 to 2.3 (Aug. 2007) ----- 
+Characters that are disallowed in fieldnames (e.g. -, /, [, ) etc…) are replaced with underscore to create valid fieldnames.
+Parametergroups that do not have a separate DESCRIPTIONS parameter now get one created based on the descriptions of the individual parameters.
+
+
+----- V2.0 (July 2007) ----- 
+Re-organized structure of function calls to be more intuitive and user-friendly.
+
