@@ -20,10 +20,10 @@ format.
 #overall coding efficiency improvements
 # - C.K.
 
-#%%
+#%% Import modules
 import matlab.engine as ml
 import os
-from os import makedirs, path
+from os import path
 import glob
 import sys
 import numpy as np
@@ -34,8 +34,9 @@ import pickle
 import time
 import scipy.io as spio
 
-from cf_functions import *
+from cf_functions import * # custom 
 
+#%% define additional modules
 def pull_mat(filename):
     #takes the subject-specific file path and pulls from either
     #existing .mat file from previous extraction, or runs the KINARM script
@@ -55,9 +56,7 @@ def pull_mat(filename):
                         'TARGET_TABLE': out[0]['TARGET_TABLE']}
     return(cfdata,target_data)
 
-
-
-
+#%%
 abspath = os.path.abspath(__file__)
 dname = os.path.dirname(abspath)
 sys.path.append('Kinarm Analysis Scripts - 3.1.1')
@@ -68,9 +67,9 @@ sys.path.append('Kinarm Analysis Scripts - 3.1.1')
 # │  ├─ Data/
 # │  │  ├─ {dexterit-e data}.kinarm
 
-exp_name = ''
-while len(exp_name)==0:
-    exp_name = input("Experiment directory to be loaded (case sensitive): ")
+exp_name = 'MSReward'
+# while len(exp_name)==0:
+#     exp_name = input("Experiment directory to be loaded (case sensitive): ")
 
 save_data = 1
 cfdata = []
@@ -80,6 +79,7 @@ file_name = 'vigor_conf_postsqueeze_'+exp_name+'.pickle'
 KINARM_DIR = os.path.join(dname,'Kinarm Analysis Scripts - 3.1.1')
 EXP_DIR = os.path.join(dname,exp_name)
 DATA_DIR = os.path.join(EXP_DIR,"Data")
+SAVE_DIR = os.path.join(EXP_DIR,"Results") # where to save processed pkl files
 
 # Switch to data folder and see if there's already pulled data. If pulled data
 # already load it.
@@ -91,11 +91,13 @@ os.chdir(DATA_DIR)
 already_pulled = []
 pulled_pickles = []
 missing_mats = []
+zip_files = []
 
 mat_files = glob.glob("*.mat")
 kin_files = glob.glob("*.kinarm")
-pick_files = glob.glob("*.pickle")
-zip_files = []
+
+os.chdir(SAVE_DIR)
+pick_files = glob.glob('**/*.pickle', recursive=True)
 
 #check if pickle data already exists
 if any(pick_files):
@@ -161,7 +163,7 @@ for filename in kin_files:
     #only append to the "to-be-pickled" data array if it needs to be pickled
     if filename in zip_files:
         cfdata.append(cf)
-        target_data.append(td)
+        target_data.append(td) 
 
 #back into data folder for experiment
 os.chdir(DATA_DIR)
@@ -188,21 +190,28 @@ if cfdata:
 
     #%%
     # Save the data.
+    if not(os.path.isdir(SAVE_DIR)):
+        os.mkdir(SAVE_DIR)
+    
+    os.chdir(SAVE_DIR)
+    
     if save_data:
         max_int = 0
         for s in range(len(cfdata)):
-            #get first unused integer from pickle files so that file numbering won't conflict
-            #technically the length of "pulled_pickles" should be sufficient, but dumb shit happens
-            for fname in pulled_pickles:
-                len_name = len(exp_name)
-                i1 = fname.find(exp_name)+len_name+1
-                i2 = fname.find('.pickle')
-                num = int(fname[i1:i2])
-                max_int = max(num,max_int)
-            f_num = s+max_int+1
-
+            # pull kinarm file name, extract subject ID and condition
+            # relies on naming scheme of <ID>_<COND>_<etc>.kinarm
+            fname = cfdata[s]['trial_1']['filename']
+            ID = str.split(fname, '\\')[-1].split('_')[0]
+            COND = str.split(fname, '\\')[-1].split('_')[1]
+            
+            # create directory for subject if it doesn't exist, save data there
+            if not(os.path.isdir(os.path.join(SAVE_DIR,ID))):
+                os.mkdir(os.path.join(SAVE_DIR,ID))
+            os.chdir(os.path.join(SAVE_DIR,ID))   
+            
             #saving the data for real this time
-            file_name = 'vigor_conf_postsqueeze_'+exp_name+'_'+str(f_num)+'.pickle'
-            with open(file_name, 'wb') as f:
+            file_name = str(ID + '_' + COND + '.pickle')
+            #file_name = 'vigor_conf_postsqueeze_'+exp_name+'_'+str(f_num)+'.pickle'
+            with open(file_name, 'wb') as f: 
                 pickle.dump([cfdata[s], target_data[s], file_name], f)
                 print('Post Squeeze data saved as: '+file_name)

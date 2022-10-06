@@ -35,7 +35,7 @@ def pull_vars(data, small_data, vars):
             np.sqrt(data[trial]['Right_HandXVel']**2 + data[trial]['Right_HandYVel']**2)})
         small_data[trial_key].update({'Right_HandAcc': \
             np.sqrt(data[trial]['Right_HandXAcc']**2 + data[trial]['Right_HandYAcc']**2)})
-        small_data[trial_key].update({'Reward_prob': data[trial]['TP_TABLE']['Reward_prob']})
+        small_data[trial_key].update({'Reward_prob': data[trial]['TP_TABLE']['Reward_Probability']})
     return small_data
 
 def squeezin2(data, mltype, n_call):
