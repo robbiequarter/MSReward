@@ -1,4 +1,5 @@
-.pycache
+*.pycache
 __pycache__
-.mat
-.kinarm
+*.mat
+*.kinarm
+Results/
