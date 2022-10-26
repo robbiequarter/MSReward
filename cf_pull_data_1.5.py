@@ -203,6 +203,8 @@ if cfdata:
             fname = cfdata[s]['trial_1']['filename']
             ID = str.split(fname, '\\')[-1].split('_')[0]
             COND = str.split(fname, '\\')[-1].split('_')[1]
+            if '.kinarm' in COND:
+                COND.replace('.kinarm', '')
             
             # create directory for subject if it doesn't exist, save data there
             if not(os.path.isdir(os.path.join(SAVE_DIR,ID))):
